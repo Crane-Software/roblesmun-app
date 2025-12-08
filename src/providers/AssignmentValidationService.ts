@@ -392,9 +392,6 @@ export class AssignmentValidationService {
     }
   }
 
-  /**
-   * Reenviar PDF de asignación
-   */
   static async resendAssignmentPDF(
     registration: RegistrationWithId
   ): Promise<{ success: boolean; message: string }> {

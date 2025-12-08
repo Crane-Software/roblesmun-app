@@ -6,10 +6,15 @@ import {
   onAuthStateChanged,
   type User as FirebaseUser,
   updateProfile,
+  sendPasswordResetEmail,
 } from "firebase/auth";
 
 export class AuthService {
-  static async register(email: string, password: string, displayName?: string) {
+  static async register(
+    email: string,
+    password: string,
+    displayName?: string
+  ): Promise<FirebaseUser> {
     const userCredential = await createUserWithEmailAndPassword(
       auth,
       email,
@@ -41,5 +46,9 @@ export class AuthService {
         resolve(user);
       });
     });
+  }
+
+  static async resetPassword(email: string): Promise<void> {
+    await sendPasswordResetEmail(auth, email);
   }
 }

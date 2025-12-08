@@ -7,6 +7,8 @@ import { IoEyeOffOutline, IoEyeOutline } from "react-icons/io5";
 import type { LoginData } from "../interfaces/LoginData";
 import type { FacultyCode } from "../interfaces/FacultyCode";
 import { FirestoreService } from "../firebase/firestore";
+import { AuthService } from "../firebase/auth";
+import { FaEnvelope } from "react-icons/fa";
 
 const loginSchema = z.object({
   email: z
@@ -81,6 +83,11 @@ const Login: FC = () => {
     [rememberMe, setRememberMe] = useState<boolean>(
       !!localStorage.getItem("rememberMe")
     ),
+    // Estados para "Olvidé contraseña"
+    [forgotMode, setForgotMode] = useState<boolean>(false),
+    [forgotEmail, setForgotEmail] = useState<string>(""),
+    [forgotLoading, setForgotLoading] = useState<boolean>(false),
+    [forgotMessage, setForgotMessage] = useState<string>(""),
     facultyCodeDebounceRef = useRef<NodeJS.Timeout | null>(null);
 
   const getInstitutions = async (): Promise<string[]> => {
@@ -311,6 +318,30 @@ const Login: FC = () => {
     });
   };
 
+  const handleSendPasswordReset = async () => {
+    setForgotMessage("");
+    if (!forgotEmail || !/^\S+@\S+\.\S+$/.test(forgotEmail)) {
+      setForgotMessage("Ingresa un correo válido.");
+      return;
+    }
+    setForgotLoading(true);
+    try {
+      await AuthService.resetPassword(forgotEmail);
+      setForgotMessage(
+        "Email de restablecimiento enviado. Revisa tu bandeja y spam."
+      );
+    } catch (error) {
+      console.error("Reset error:", error);
+      setForgotMessage(
+        error?.code === "auth/user-not-found"
+          ? "No existe una cuenta con ese correo."
+          : "Error enviando el email. Intenta nuevamente."
+      );
+    } finally {
+      setForgotLoading(false);
+    }
+  };
+
   const fieldsToShow = formFields.filter(
     (field) => !field.isRegistering || (field.isRegistering && isRegistering)
   );
@@ -537,6 +568,59 @@ const Login: FC = () => {
                   : "REGISTRARSE"
                 : "INICIAR SESIÓN"}
             </button>
+
+            {!isRegistering && (
+              <div className="text-right">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setForgotMode(true);
+                    setForgotEmail(formData.email || "");
+                    setForgotMessage("");
+                  }}
+                  className="text-sm text-gray-400 font-montserrat-light hover:text-white transition-colors cursor-pointer"
+                >
+                  ¿Olvidaste tu contraseña?
+                </button>
+              </div>
+            )}
+
+            {forgotMode && (
+              <div className="bg-[#101010] p-4 bg-glass space-y-2 font-montserrat-light">
+                <div className="flex items-center gap-2">
+                  <FaEnvelope className="text-gray-300" />
+                  <input
+                    type="email"
+                    placeholder="Ingresa tu correo electrónico"
+                    value={forgotEmail}
+                    onChange={(e) => setForgotEmail(e.target.value)}
+                    className="flex-1 p-2 bg-glass outline-none"
+                  />
+                </div>
+                {forgotMessage && (
+                  <div className="text-sm text-gray-300">{forgotMessage}</div>
+                )}
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={handleSendPasswordReset}
+                    disabled={forgotLoading}
+                    className="cursor-pointer flex-1 bg-[#d53137] hover:bg-[#b52a2f] transition-colors  py-2 rounded disabled:opacity-50"
+                  >
+                    {forgotLoading
+                      ? "Enviando..."
+                      : "Enviar email de restablecimiento"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setForgotMode(false)}
+                    className="bg-glass cursor-pointer py-2 px-4 rounded"
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              </div>
+            )}
           </form>
         </div>
 
