@@ -380,7 +380,7 @@ export class AssignmentValidationService {
 
   private static async logAssignmentAction(
     registrationId: string,
-    actionData: Record<string, any>
+    actionData: Record<string, unknown>
   ): Promise<void> {
     try {
       await FirestoreService.add("assignment_logs", {

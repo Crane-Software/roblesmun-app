@@ -333,7 +333,10 @@ const Login: FC = () => {
     } catch (error) {
       console.error("Reset error:", error);
       setForgotMessage(
-        error?.code === "auth/user-not-found"
+        typeof error === "object" &&
+          error !== null &&
+          "code" in error &&
+          (error as { code?: string }).code === "auth/user-not-found"
           ? "No existe una cuenta con ese correo."
           : "Error enviando el email. Intenta nuevamente."
       );
