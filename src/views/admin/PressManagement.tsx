@@ -766,7 +766,6 @@ const PressManagement: FC = () => {
           </div>
         </div>
 
-        {/* BARRA DE ACCIONES MASIVAS */}
         {selectedIds.length > 0 && (
           <div className="mb-6 p-4 bg-[#d53137]/20 border-2 border-[#d53137] rounded-lg flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-3">
