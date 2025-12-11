@@ -20,6 +20,8 @@ import CommitteesManagement from "./views/admin/CommitteesManagement";
 import DelegatesManagement from "./views/admin/DelegatesManagement";
 import PresssManagement from "./views/admin/PressManagement";
 import UsersManagement from "./views/admin/UsersManagement";
+import InstitutionsManagement from "./views/admin/InstitutionsManagement";
+import SeatManagement from "./views/admin/SeatManagement";
 
 function App() {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 640),
@@ -115,6 +117,24 @@ function App() {
               element={
                 <ProtectedRoute requireAdmin={true}>
                   <UsersManagement />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/admin/institutions"
+              element={
+                <ProtectedRoute requireAdmin={true}>
+                  <InstitutionsManagement />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/admin/seats"
+              element={
+                <ProtectedRoute requireAdmin={true}>
+                  <SeatManagement />
                 </ProtectedRoute>
               }
             />

@@ -7,7 +7,9 @@ import {
   FaGavel,
   FaClipboardList,
   FaUserShield,
+  FaBuilding,
 } from "react-icons/fa";
+import { IoPerson } from "react-icons/io5";
 
 const AdminDashboard: FC = () => {
   const sections = [
@@ -41,6 +43,16 @@ const AdminDashboard: FC = () => {
       icon: <FaUserShield />,
       path: "/admin/users",
     },
+    {
+      title: "Instituciones",
+      icon: <FaBuilding />,
+      path: "/admin/institutions",
+    },
+    {
+      title: "Gestión de Cupos",
+      icon: <IoPerson />,
+      path: "/admin/seats",
+    },
   ];
 
   return (
@@ -56,7 +68,7 @@ const AdminDashboard: FC = () => {
         Salir del Panel Admin
       </Link>
 
-      <div className="flex flex-col gap-6 mt-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl gap-6 mt-8">
         {sections.map((section) => (
           <Link
             key={section.path}

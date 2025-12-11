@@ -942,20 +942,26 @@ const Caroussel: FC<CarousselProps> = ({
               onClick={
                 currentStep === slides
                   ? () => (window.location.href = "/")
+                  : currentStep === 4 && formData?.paymentMethod === "Efectivo"
+                  ? () => (window.location.href = "/")
                   : currentStep === 4
                   ? handleSubmit
                   : handleNext
               }
               disabled={isSubmitting}
               className={`cursor-pointer px-6 py-2 mx-8 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-opacity-80
-              ${
-                currentStep === 4
-                  ? " bg-[#f0f0f0] text-[#242424] font-montserrat-bold hover:bg-yellow-600 hover:text-[#f0f0f0]"
-                  : "bg-glass font-montserrat-light "
-              }
-            `}
+                ${
+                  currentStep === 4
+                    ? formData?.paymentMethod === "Efectivo"
+                      ? "bg-[#f0f0f0] text-[#242424] font-montserrat-bold hover:bg-yellow-600 hover:text-[#f0f0f0]"
+                      : "bg-[#f0f0f0] text-[#242424] font-montserrat-bold hover:bg-yellow-600 hover:text-[#f0f0f0]"
+                    : "bg-glass font-montserrat-light "
+                }
+              `}
             >
               {currentStep === slides
+                ? "Terminar"
+                : currentStep === 4 && formData?.paymentMethod === "Efectivo"
                 ? "Terminar"
                 : currentStep === 4
                 ? "Pagar"

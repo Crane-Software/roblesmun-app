@@ -382,7 +382,6 @@ export class SupabaseStorage {
         );
       }
 
-      // ⚠️ Advertencia si el tipo MIME no coincide pero la extensión es válida
       if (!isValidByType && isValidByExt) {
         console.warn(
           `⚠️ Tipo MIME no detectado o incorrecto (${file.type}), pero la extensión .${fileExt} es válida. Continuando...`
