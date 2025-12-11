@@ -25,6 +25,8 @@ import {
   FaUpload,
   FaCheck,
   FaTimes,
+  FaCheckSquare,
+  FaSquare,
 } from "react-icons/fa";
 import Loader from "../../components/Loader";
 import { FirestoreService } from "../../firebase/firestore";
@@ -78,6 +80,9 @@ const PressManagement: FC = () => {
   const [bulkUploadProgress, setBulkUploadProgress] = useState<number>(0);
   const [isBulkUploading, setIsBulkUploading] = useState<boolean>(false);
   const [uploadedCount, setUploadedCount] = useState<number>(0);
+
+  // Estado para selección múltiple
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   // --- FUNCIONES DE CARGA DE DATOS ---
   const fetchPressItems = async (append: boolean = false) => {
@@ -660,6 +665,55 @@ const PressManagement: FC = () => {
     { value: "reverse-alphabetical", label: "Z-A", icon: <FaSortAlphaUp /> },
   ];
 
+  // Seleccionar/deseleccionar individual
+  const handleSelectItem = (id: string) => {
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
+  };
+
+  // Seleccionar/deseleccionar todos los mostrados
+  const handleSelectAll = () => {
+    if (selectedIds.length === displayedItems.length) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(displayedItems.map((item) => item.id!));
+    }
+  };
+
+  // Eliminar seleccionados
+  const handleDeleteSelected = async () => {
+    if (selectedIds.length === 0) return;
+    if (
+      !window.confirm(
+        `¿Seguro que deseas eliminar ${selectedIds.length} archivo(s)? Esta acción no se puede deshacer.`
+      )
+    )
+      return;
+    setIsLoading(true);
+    try {
+      for (const id of selectedIds) {
+        const item = pressItems.find((p) => p.id === id);
+        if (item?.url) {
+          try {
+            await SupabaseStorage.deletePressFile(item.url);
+          } catch (error) {
+            console.warn("No se pudo eliminar el archivo", error);
+          }
+        }
+        await FirestoreService.delete("press", id);
+      }
+      alert(`Eliminados ${selectedIds.length} archivos exitosamente`);
+      setSelectedIds([]);
+      await fetchPressItems();
+    } catch (error) {
+      console.error("Error al eliminar archivos:", error);
+      alert("Error al eliminar archivos");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="p-12 font-montserrat-light w-full">
       <div className="p-0">
@@ -711,6 +765,33 @@ const PressManagement: FC = () => {
             </button>
           </div>
         </div>
+
+        {/* BARRA DE ACCIONES MASIVAS */}
+        {selectedIds.length > 0 && (
+          <div className="mb-6 p-4 bg-[#d53137]/20 border-2 border-[#d53137] rounded-lg flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <FaCheckSquare className="text-[#d53137] text-2xl" />
+              <span className="text-lg font-montserrat-bold text-white">
+                {selectedIds.length} archivo(s) seleccionado(s)
+              </span>
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={handleDeleteSelected}
+                className="bg-red-600 text-white px-6 py-2 rounded-lg font-montserrat-bold hover:bg-red-700 transition-colors cursor-pointer flex items-center gap-2"
+              >
+                <FaTrash />
+                Eliminar seleccionados
+              </button>
+              <button
+                onClick={() => setSelectedIds([])}
+                className="bg-glass text-[#f0f0f0] px-6 py-2 rounded-lg hover:bg-gray-700 transition-colors cursor-pointer"
+              >
+                Cancelar selección
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* SECCIÓN DE CARGA EN LOTE */}
         {showBulkUpload && (
@@ -1227,11 +1308,39 @@ const PressManagement: FC = () => {
         {!isLoading && (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {/* Selector de todos */}
+              <div className="col-span-full flex items-center mb-2">
+                <button
+                  onClick={handleSelectAll}
+                  className="text-lg text-gray-300 flex items-center gap-2 cursor-pointer"
+                >
+                  {selectedIds.length === displayedItems.length ? (
+                    <FaCheckSquare className="text-[#d53137]" />
+                  ) : (
+                    <FaSquare />
+                  )}
+                  {selectedIds.length === displayedItems.length
+                    ? "Deseleccionar todos"
+                    : "Seleccionar todos"}
+                </button>
+              </div>
               {displayedItems.map((item) => (
                 <div
                   key={item.id}
-                  className="p-4 bg-glass rounded-lg border border-gray-700 hover:border-[#d53137] transition-all duration-300"
+                  className={`relative p-4 bg-glass rounded-lg border border-gray-700 hover:border-[#d53137] transition-all duration-300`}
                 >
+                  {/* Checkbox de selección */}
+                  <button
+                    onClick={() => handleSelectItem(item.id!)}
+                    className="absolute top-4 left-4 z-10 text-2xl cursor-pointer"
+                    aria-label="Seleccionar"
+                  >
+                    {selectedIds.includes(item.id!) ? (
+                      <FaCheckSquare className="text-[#d53137]" />
+                    ) : (
+                      <FaSquare className="text-gray-400" />
+                    )}
+                  </button>
                   <div
                     className="w-full h-48 flex items-center justify-center mb-4 bg-[#101010] rounded overflow-hidden cursor-pointer hover:opacity-80 transition-opacity"
                     onClick={() => handleMediaClick(item)}
